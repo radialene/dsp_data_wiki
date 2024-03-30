@@ -399,7 +399,7 @@ def print_wiki(data):
     categories_str = ''.join(f'    {k.name}={v!r},\n' for k, v in CATEGORIES.items())
     building_categories_str = ''.join(f'    {x!r},\n' for x in BUILDING_CATEGORIES)
 
-    print(f"""return {{
+    wiki_txt = f"""return {{
 --[[
 Data for all the items. Each entry is a table, keyed by the item's id. The
 entries are sorted by id, although you can't count on this when using pairs()
@@ -570,7 +570,9 @@ categories = {{
 -- in-game to the name of the category.
 building_categories = {{
 {building_categories_str}}},
-}}""")
+}}"""
+    print(wiki_txt)
+    return wiki_txt
 
 def fuzzy_lookup_item(name_or_id, lst):
     """Lookup an item by either name or id.
@@ -624,6 +626,8 @@ def main():
                         help='Dump everything')
     parser.add_argument('--wiki', action='store_true',
                         help='Print wiki text for Module:Recipe/Data')
+    parser.add_argument('--dump', action='store_true',
+                        help='Save to file')
     args = parser.parse_args()
 
     print('Reading data... ', end='', flush=True, file=sys.stderr)
@@ -655,7 +659,10 @@ def main():
                 for entry in data.StringProtoSet.data_array:
                     print(entry)
             elif args.wiki:
-                print_wiki(data)
+                wiki_txt = print_wiki(data)
+                if args.dump:
+                    with open("./wiki.lua", "w+", encoding="utf-8") as wiki:
+                        wiki.write(wiki_txt)
             else:
                 print('Nothing to do!', file=sys.stderr)
     except RuntimeError as ex:
